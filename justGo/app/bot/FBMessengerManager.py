@@ -1,7 +1,6 @@
 from pymessenger.bot import Bot
 from ..config.config import Config
 from ..models.PathSearchResult import PathSearchResultCode
-import pdb
 
 bot = Bot(Config.PAGE_ACCESS_TOKEN)
 

@@ -3,8 +3,6 @@ from . import mongo
 from .config.config import Config
 import requests
 import json
-import pdb
-
 
 class Singleton(type):
   instance = None

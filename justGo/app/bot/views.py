@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*- 
 from flask import Flask, request, Blueprint
-from pymessenger.bot import Bot
-from .. import mongo, PathManager
+from .. import PathManager
 from ..config.config import Config
 from . import fb_messenger, FBMessengerManager
-from ..models.TrafficType import TrafficType 
-import requests
-import json
-import pdb
-
-bot = Bot(Config.PAGE_ACCESS_TOKEN)
 
 @fb_messenger.route('', methods=['GET', 'POST'])
 def webhook():
