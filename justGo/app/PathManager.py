@@ -1,6 +1,8 @@
 from .models import TrafficType, PathSearchResult, PathSearchResultCode
 from . import mongo
 from .config.config import Config
+from .models.Path import Path
+from bson import ObjectId
 import requests
 import json
 
@@ -14,49 +16,79 @@ class Singleton(type):
 
 
 class PathManager(metaclass=Singleton):
-  def makeReplyMessage(self, message):
+  
+  def search(self, message):
      if self.checkMessageFormat(message):
        route = message.split(" ")
-       source = self.getLocation(route[0])
-       destination = self.getLocation(route[1])
-       if source != None and destination != None:
-         path_id = self.searchPath(source,destination)
-         if path_id != None:
-           #paths = mongo.db.paths.find_one({"_id":path_id})
-           return PathSearchResult(PathSearchResultCode.SUCCESS, path_id) 
-         else:
-           return PathSearchResult(PathSearchResultCode.NOTFOUND_PATH)
+       source_id = self.searchLocation(route[0])
+       destination_id = self.searchLocation(route[1])
+       if not source_id is None and  not destination_id is None:
+         return self.searchPath(Path(source_id,destination_id))
        else:
          return PathSearchResult(PathSearchResultCode.NOTFOUND_LOCATION) 
      else:
        return PathSearchResult(PathSearchResultCode.UNSUPPORTED_FORMAT)
 
+  def getPathMessage(self, payload, option):
+     path = payload.split(',')
+     source_id, destination_id = ObjectId(path[0]),ObjectId(path[1])
+     if option == Config.OPTION_SHORTEST_PATH:
+       path = mongo.db.paths.find({'location.source_id':source_id,'location.destination_id':destination_id}).sort([('info.totalTime',1)]).limit(1)
+     elif option == Config.OPTION_LEAST_COST:
+       path = mongo.db.paths.find({'location.source_id':source_id,'location.destination_id':destination_id}).sort([('info.totalDistance',1)])
+     elif option == Config.OPTION_MINIMUM_TRANSFER:
+       path = mongo.db.paths.find({'location.source_id':source_id,'location.destination_id':destination_id}).sort([('info.totalTransitCount',1)]).limit(1)
+     return self.makePathMessage(path[0])
+
+  def makePathMessage(self, path):
+     message = ""
+     for i in range(0,len(path['subPath'])):
+        subpath = path['subPath'][i]
+        if subpath['trafficType'] == TrafficType.WALK.value:
+          message += self.makeByWalkMessage(subpath)
+        elif subpath['trafficType'] == TrafficType.BUS.value:
+          message += self.makeByBusMessage(subpath)
+        elif subpath['trafficType'] == TrafficType.SUBWAY.value:
+          message += self.makeBySubwayMessage(subpath)
+     message += self.makePathInfoMessage(path['info'])
+     return message
+
+
   def checkMessageFormat(self, message):
      return len(message.split(" ")) == 2
 
-  def getLocation(self, address):
+  def searchLocation(self, address):
      params = {'address' : address , 'key' : Config.GOOGLE_MAPS_API_KEY}
      res = requests.get(Config.GOOGLE_MAPS_URL, params = params)
      if res.status_code == requests.codes.ok:
-       return res.json()['results'][0]['geometry']['location']
-     else:
-       return None
+       lat = res.json()['results'][0]['geometry']['location']['lat']
+       lng = res.json()['results'][0]['geometry']['location']['lng']
+       locations = mongo.db.locations
+       result = locations.find_one({'lat':lat,'lng':lng})
+       if result is None:
+         result = locations.insert(res.json()['results'][0]['geometry']['location'])
+         return result
+       else:
+         return result['_id']
+     return None
 
-  def searchPath(self, source, destination):
+  def searchPath(self, path):
+     source = mongo.db.locations.find_one({'_id' : path.source_id})
+     destination = mongo.db.locations.find_one({'_id' : path.destination_id})
      params = {'svcID' : Config.AROINTECH_SVCID, 'OPT' : 0,
                'SX' : source['lng'], 'SY' : source['lat'],
                'EX' : destination['lng'], 'EY' : destination['lat'],
                'output' : 'json', 'Lang' : 0 , 'resultCount' : 10}
      res = requests.get(Config.AROINTECH_URL, params = params)
      if res.status_code == requests.codes.ok:
-       result = res.json()['result']
-       location = {'source':source, 'destination':destination}
-       result.update(location) # location정보도 같이 저장합니다.
-       paths = mongo.db.paths
-       path_id = paths.insert(result)
-       return path_id
-     return None
-
+       location = {'source_id':path.source_id, 'destination_id':path.destination_id}
+       paths = res.json()['result']['path']
+       for p in paths:
+          totalTransitCount = {'totalTransitCount': p['info']['busTransitCount'] + p['info']['subwayTransitCount']}
+          mongo.db.paths.update({'mapObj': p['info']['mapObj']},
+                                {'$set':{'pathType':p['pathType'],'subPath':p['subPath'],'info':p['info'],'location':location,'totalTransitCount':totalTransitCount}},upsert=True)  
+       return PathSearchResult(PathSearchResultCode.SUCCESS,path)
+     return PathSearchResult(PathSearchResultCode.NOTFOUND_PATH)
 
 
   #TODO: source, destination 추가
@@ -72,18 +104,4 @@ class PathManager(metaclass=Singleton):
      return "["+subpath['lane'][0]['name']+"]"+ subpath['startName']+" ~ "+subpath['endName']
   def makePathInfoMessage(self, info):
      return "총 요금 : "+str(info['payment']) + "총 소요시간 : " + str(info['totalTime'])
-
-  def sendPathMessage(self, paths):
-     path = paths['path'][0]
-     message = ""
-     for i in range(len(path['subPath'])):
-        subpath = path['subPath'][i]
-        if subpath['trafficType'] == TrafficType.WALK.value:
-          message += makeByWalkMessage(subpath)
-        elif subpath['trafficType'] == TrafficType.BUS.value:
-          message += makeByBusMessage(subpath)
-        elif subpath['trafficType'] == TrafficType.SUBWAY.value:
-          message += makeBySubwayMessage(subpath)
-     message += makePathInfoMessage(path['info'])
-     return message
 

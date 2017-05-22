@@ -16,33 +16,39 @@ class FBMessengerManager(metaclass=Singleton):
 
   def sendReplyMessage(self,recipient_id, result):
      if result.result_code == PathSearchResultCode.SUCCESS:
-       self.sendSuggestionsReply(recipient_id,str(result.path_id))
+       self.sendSuggestionsReply(recipient_id,result)
      else:
        self.sendTextMessage(recipient_id, result.getErrorMessage())
 
   def sendTextMessage(self, recipient_id, message):
      bot.send_text_message(recipient_id, message)
 
-  def sendSuggestionsReply(self,recipient_id, path_id):
+  def sendSuggestionsReply(self,recipient_id,result):
+     # source_id,destination_id
+     #import pdb
+     #pdb.set_trace()
+     payload = str(result.path.source_id) + "," + str(result.path.destination_id) 
      bot.send_message(recipient_id,{
         "text":"원하는 정보가 무엇인가요?",
         "quick_replies": [
         {
             "content_type":"text",
-            "title":"최단경로",
-            "payload":Config.PAYLOAD_QUICK_REPLY_SUGGESTIONS_SHORTEST_PATH
+            "title":Config.OPTION_SHORTEST_PATH,
+            "payload":payload
+            
         },
         {
             "content_type":"text",
-            "title":"최소비용경로",
-            "payload":Config.PAYLOAD_QUICK_REPLY_SUGGESTIONS_LEAST_COST
+            "title":Config.OPTION_LEAST_COST,
+            "payload":payload
         },
         {
             "content_type":"text",
-            "title":"최소환승경로",
-            "payload":Config.PAYLOAD_QUICK_REPLY_SUGGESTIONS_MINIMUM_TRANSFER}
-        ],
-        "metadata":path_id
+            "title":Config.OPTION_MINIMUM_TRANSFER,
+            "payload":payload
+        }
+        ]
      }) 
+     
 
 

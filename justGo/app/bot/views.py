@@ -4,6 +4,7 @@ from .. import PathManager
 from ..config.config import Config
 from . import fb_messenger, FBMessengerManager
 
+
 @fb_messenger.route('', methods=['GET', 'POST'])
 def webhook():
   if request.method == 'GET':
@@ -18,10 +19,18 @@ def webhook():
        for x in messaging:
          if x.get('message'):
            recipient_id = x['sender']['id'] 
-           if x['message'].get('text'):
-            message = x['message']['text']
-            result = PathManager.makeReplyMessage(message)
-            FBMessengerManager.sendReplyMessage(recipient_id, result)            
+           # quick_reply
+           if x['message'].get('quick_reply'):
+             quick_reply = x['message']['quick_reply']
+             payload = quick_reply['payload']
+             option = x['message']['text']
+             message = PathManager.getPathMessage(payload,option)
+             FBMessengerManager.sendTextMessage(recipient_id,message)
+           # text     
+           elif x['message'].get('text'):
+             message = x['message']['text']
+             result = PathManager.search(message)
+             FBMessengerManager.sendReplyMessage(recipient_id, result)            
          else:
            pass
   return "Success"

@@ -8,11 +8,11 @@ class PathSearchResultCode(type):
 
 class PathSearchResult(object):
   result_code = PathSearchResultCode.NONE
-  path_id = 0
+  path = None
 
-  def __init__(self, result_code, path_id=0):
+  def __init__(self, result_code, path=None):
      self.result_code = result_code
-     self.path_id = path_id
+     self.path = path
   
 
   def getErrorMessage(self):
