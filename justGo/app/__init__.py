@@ -14,8 +14,10 @@ def create_app():
   app.config['MONGO_URI'] = Config.MONGO_URI 
   mongo.init_app(app)
   # Create app blueprints
-  from .bot import fb_messenger as fb_messenger_blueprint
+  from .fb import fb_messenger as fb_messenger_blueprint
+  from .bot import bot as bot_blueprint
   app.register_blueprint(fb_messenger_blueprint, url_prefix='/webhook')
+  app.register_blueprint(bot_blueprint, url_prefix='/bot')
   return app
 
 
