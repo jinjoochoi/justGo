@@ -1,7 +1,7 @@
 from flask import Blueprint
-from .FBMessengerManager import FBMessengerManager
+from .BotManager import BotManager
 
-fb_messenger = Blueprint('fb_messenger', __name__)
-FBMessengerManager = FBMessengerManager()
+bot = Blueprint('bot',__name__)
+BotManager = BotManager()
 
 from . import views

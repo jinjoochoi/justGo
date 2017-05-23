@@ -1,37 +1,18 @@
-# -*- coding: utf-8 -*- 
-from flask import Flask, request, Blueprint
+# -*- coding: utf-8 -*-
+from flask import Flask, request, Blueprint, jsonify
+from . import bot, BotManager
 from .. import PathManager
-from ..config.config import Config
-from . import fb_messenger, FBMessengerManager
 
-
-@fb_messenger.route('', methods=['GET', 'POST'])
-def webhook():
-  if request.method == 'GET':
-    if request.args.get("hub.verify_token") == Config.VALIDATION_TOKEN:
-      return request.args.get("hub.challenge") 
-    else:
-      return 'Invalid verification token'
-  if request.method == 'POST':
-    output = request.get_json()
-    for event in output['entry']:
-       messaging = event['messaging']
-       for x in messaging:
-         if x.get('message'):
-           recipient_id = x['sender']['id'] 
-           # quick_reply
-           if x['message'].get('quick_reply'):
-             quick_reply = x['message']['quick_reply']
-             payload = quick_reply['payload']
-             option = x['message']['text']
-             message = PathManager.getPathMessage(payload,option)
-             FBMessengerManager.sendTextMessage(recipient_id,message)
-           # text     
-           elif x['message'].get('text'):
-             message = x['message']['text']
-             result = PathManager.search(message)
-             FBMessengerManager.sendReplyMessage(recipient_id, result)            
-         else:
-           pass
-  return "Success"
-
+@bot.route('/', methods=['POST'])
+def webbhook():
+   if request.method == 'POST':
+     output = request.get_json()
+     if output['messaging'].get('quick_reply'):
+        option = output['messaging']['quick_reply']['option']
+        payload = output['messaging']['quick_reply']['payload']
+        message = PathManager.getPathMessage(payload,option)
+        return message
+     elif output['messaging'].get('text'):
+        result = PathManager.search(output['messaging']['text'])
+        message = BotManager.sendReplyMessage(result)
+        return jsonify(result = message)
