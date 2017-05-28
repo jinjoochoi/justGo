@@ -11,7 +11,7 @@ def webbhook():
         option = output['messaging']['quick_reply']['option']
         payload = output['messaging']['quick_reply']['payload']
         message = PathManager.getPathMessage(payload,option)
-        return message
+        return jsonify(result = message)
      elif output['messaging'].get('text'):
         result = PathManager.search(output['messaging']['text'])
         message = BotManager.sendReplyMessage(result)
