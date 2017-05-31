@@ -1,6 +1,6 @@
 from enum import Enum
 
 class TrafficType(Enum):
-  subway = 1
-  bus = 2
-  walk = 3
+  SUBWAY = 1
+  BUS = 2
+  WALK = 3
