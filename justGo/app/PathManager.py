@@ -120,20 +120,20 @@ class PathManager(metaclass=Singleton):
   def makeIntroMessage(self, path, option):
      source_name = path['location']['source_name'] 
      destination_name = path['location']['destination_name'] 
-     return source_name +" ~ "+ destination_name + " "+option + '경로\n\n'
+     return source_name +" -> "+ destination_name + " "+option + '\n\n'
 
   #TODO: source, destination 추가
   def makeByWalkMessage(self, source_name, destination_name, subpath):
-     return "[도보] " + source_name + " ~ "+ destination_name + '\n'
+     return "[🏃] \n" + source_name + " -> "+ destination_name + '\n'
 
   #TODO: lane가 여러개일 경우
   def makeByBusMessage(self, subpath):
-     return "["+ subpath['lane'][0]['busNo']+"번 버스] "+ subpath['startName']+" ~ "+subpath['endName'] + '\n'
+     return "[🚌"+ subpath['lane'][0]['busNo']+"] \n"+ subpath['startName']+" -> "+subpath['endName'] + '\n'
 
   #TODO: lane가  여러개일 경우
   def makeBySubwayMessage(self, subpath):
-     return "["+subpath['lane'][0]['name']+"]"+ subpath['startName']+" ~ "+subpath['endName'] + '\n'
+     return "[🚊"+subpath['lane'][0]['name']+"]\n"+ subpath['startName']+" -> "+subpath['endName'] + '\n'
 
   def makePathInfoMessage(self, info):
-     return "총 요금 : "+str(info['payment'])+"원" + " 총 소요시간 : " + convertToFriendlyTime(info['totalTime'])+ '\n'
+     return "\n총 요금 : "+str(info['payment'])+"원" + " 총 소요시간 : " + convertToFriendlyTime(info['totalTime'])+ '\n'
 

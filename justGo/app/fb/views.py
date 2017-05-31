@@ -19,6 +19,7 @@ def webhook():
        for x in messaging:
          if x.get('message'):
            recipient_id = x['sender']['id'] 
+           FBMessengerManager.sendTypingOnAction(recipient_id)
            # quick_reply
            if x['message'].get('quick_reply'):
              quick_reply = x['message']['quick_reply']

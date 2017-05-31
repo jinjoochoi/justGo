@@ -15,9 +15,11 @@ def create_app():
   mongo.init_app(app)
   # Create app blueprints
   from .fb import fb_messenger as fb_messenger_blueprint
+  from .kakao import kakao_messenger as kakao_messenger_blueprint
   from .bot import bot as bot_blueprint
   app.register_blueprint(fb_messenger_blueprint, url_prefix='/webhook')
   app.register_blueprint(bot_blueprint, url_prefix='/bot')
+  app.register_blueprint(kakao_messenger_blueprint, url_prefix='')
   return app
 
 
