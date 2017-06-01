@@ -1,33 +1,59 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, Blueprint, jsonify
 from . import kakao_messenger
+from .manager import APIHandler
+from app import app
 
-@kakao_messenger.route("/keyboard", methods=["GET"])
+@kakao_messenger.route("/keyboard", methods=["GET", "POST"])
 def yellow_keyboard():
-   message = {"type" : "buttons","buttons" : ["선택 1", "선택 2", "선택 3"]} 
-   code = 200
-   return jsonify(message),code
-
-@kakao_messenger.route("/message", methods=["POST"])
+    message, code = APIHandler.process("home")
+    return jsonify(message), codeI
+def webhook():
+  if request.method == 'GET':
+    if request.args.get("hub.verify_token") == Config.VALIDATION_TOKEN:
+      return request.args.get("hub.challenge") 
+    else:
+      return 'Invalid verification token'
+  if request.method == 'POST':
+    output = request.get_json()
+    for event in output['entry']:
+       messaging = event['messaging']
+       for x in messaging:
+         if x.get('message'):
+           recipient_id = x['sender']['id'] 
+           FBMessengerManager.sendTypingOnAction(recipient_id)
+           # quick_reply
+           if x['message'].get('quick_reply'):
+             quick_reply = x['message']['quick_reply']
+             payload = quick_reply['payload']
+             option = x['message']['text']
+             message = PathManager.getPathMessage(payload,option)
+             FBMessengerManager.sendTextMessage(recipient_id,message)
+           # text     
+           elif x['message'].get('text'):
+             message = x['message']['text']
+             result = PathManager.search(message)
+             FBMessengerManager.sendReplyMessage(recipient_id, result)            
+         else:
+           pass
+  return "Success"
+@kakao_messenger.route("/keyboard", methods=["GET"])
 def yellow_message():
-   message = {"type" : "buttons","buttons" : ["선택 1", "선택 2", "선택 3"]} 
-   code = 200
-   return jsonify(message),code
+    message, code = APIHandler.process("message", request.json)
+    return jsonify(message), code
 
-@kakao_messenger.route("/friend", methods=["POST"])
-def yellow_friend():
-   message = {"type" : "buttons","buttons" : ["선택 1", "선택 2", "선택 3"]} 
-   code = 200
-   return jsonify(message),code
 
-@kakao_messenger.route("/friend/<key>", methods=["DELETE"])
+@app.route("/friend", methods=["POST"]
+)def yellow_friend_add():
+    message, code = APIHandler.process("add", request.json)
+    return jsonify(message), code
+
+@app.route("/friend/<key>", methods=["DELETE"])
 def yellow_friend_block(key):
-   message = {"type" : "buttons","buttons" : ["선택 1", "선택 2", "선택 3"]} 
-   code = 200
-   return jsonify(message),code
+    message, code = APIHandler.process("block", key)
+    return jsonify(message), code
 
-@kakao_messenger.route("/chat_room/<key>", methods=["DELETE"])
+@app.route("/chat_room/<key>", methods=["DELETE"])
 def yellow_exit(key):
-   message = {"type" : "buttons","buttons" : ["선택 1", "선택 2", "선택 3"]} 
-   code = 200
-   return jsonify(message),code
+    message, code = APIHandler.process("exit", key)
+    return jsonify(message), code
