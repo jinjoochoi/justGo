@@ -9,6 +9,8 @@ from .PathManager import PathManager
 PathManager = PathManager()
 from .NLCManager import NLCManager
 NLCManager = NLCManager()
+from .NLPManager import NLPManager
+NLPManager = NLPManager()
 
 def create_app():
   app = Flask(__name__)

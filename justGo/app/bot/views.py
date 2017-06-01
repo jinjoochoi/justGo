@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, Blueprint, jsonify
 from . import bot, BotManager
-from .. import PathManager,NLCManager
+from .. import PathManager,NLCManager,NLPManager
 from ..config.config import Config 
 
 @bot.route('/', methods=['POST'])
@@ -18,7 +18,8 @@ def webbhook():
         if nlc_result == Config.NLC_CLASS_GREETING:
           message = '안녕ㅎㅎ'
           return jsonify(result = message)
-        else:
-          result = PathManager.search(output['messaging']['text'])
+        elif nlc_result == Config.NLC_CLASS_SEARCH_PATH:
+          nlp_result = NLPManager.findSrcAndDest(output['messaging']['text'])
+          result = PathManager.search(nlp_result)
           message = BotManager.sendReplyMessage(result)
           return jsonify(result = message)

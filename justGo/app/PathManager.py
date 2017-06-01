@@ -19,16 +19,12 @@ class Singleton(type):
 class PathManager(metaclass=Singleton):
   
   def search(self, message):
-     if self.checkMessageFormat(message):
-       route = message.split(" ")
-       source_id = self.searchLocation(route[0])
-       destination_id = self.searchLocation(route[1])
-       if not source_id is None and  not destination_id is None:
-         return self.searchPath(Path(source_id,route[0],destination_id,route[1]))
-       else:
-         return PathSearchResult(PathSearchResultCode.NOTFOUND_LOCATION) 
-     else:
-       return PathSearchResult(PathSearchResultCode.UNSUPPORTED_FORMAT)
+    source_id = self.searchLocation(message[0])
+    destination_id = self.searchLocation(message[1])
+    if not source_id is None and  not destination_id is None:
+      return self.searchPath(Path(source_id,message[0],destination_id,message[1]))
+    else:
+      return PathSearchResult(PathSearchResultCode.NOTFOUND_LOCATION) 
 
   def getPathMessage(self, payload, option):
      path = payload.split(',')

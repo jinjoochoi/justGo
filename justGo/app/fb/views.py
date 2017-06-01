@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 from flask import Flask, request, Blueprint
-from .. import PathManager,NLCManager
+from .. import PathManager,NLCManager, NLPManager
 from ..config.config import Config
 from . import fb_messenger, FBMessengerManager
 
@@ -32,9 +32,10 @@ def webhook():
              nlc_result = NLCManager.analysis(x['message']['text'])
              if nlc_result == Config.NLC_CLASS_GREETING:
                FBMessengerManager.sendTextMessage(recipient_id,'안녕 ㅎㅎ')
-             else:
-               message = x['message']['text']
-               result = PathManager.search(message)
+             elif nlc_result == Config.NLC_CLASS_SEARCH_PATH:
+               nlp_result = NLPManager.findSrcAndDest(x['message']['text'])
+               print(nlp_result)
+               result = PathManager.search(nlp_result)
                FBMessengerManager.sendReplyMessage(recipient_id, result)            
          else:
            pass
