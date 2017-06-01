@@ -7,6 +7,8 @@ import pdb
 mongo = PyMongo(config_prefix='MONGO')
 from .PathManager import PathManager
 PathManager = PathManager()
+from .NLCManager import NLCManager
+NLCManager = NLCManager()
 
 def create_app():
   app = Flask(__name__)
