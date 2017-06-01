@@ -4,9 +4,12 @@ from . import kakao_messenger
 from .manager import APIHandler
 from app import app
 
-@kakao_messenger.route("/message", methods=["GET", "POST"])
+@kakao_messenger.route("/keyboard", methods=["GET"])
 def yellow_keyboard():
     message, code = APIHandler.process("home")
+@kakao_messenger.route("/message", methods=["GET", "POST"])
+def yellow_message():
+    message, code = APIHandler.process("message", request.json)
     return jsonify(message), code
 def webhook():
   if request.method == 'GET':
@@ -37,10 +40,6 @@ def webhook():
          else:
            pass
   return "Success"
-@kakao_messenger.route("/keyboard", methods=["GET"])
-def yellow_message():
-    message, code = APIHandler.process("message", request.json)
-    return jsonify(message), code
 
 
 @app.route("/friend", methods=["POST"]
