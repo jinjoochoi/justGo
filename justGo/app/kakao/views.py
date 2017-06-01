@@ -23,20 +23,20 @@ def webhook():
        messaging = event['messaging']
        for x in messaging:
          if x.get('message'):
-           recipient_id = x['sender']['id'] 
-           kakao_messenger.sendTypingOnAction(recipient_id)
+           data = x['sender']['id'] 
+           kakao_messenger.sendTypingOnAction(data)
            # quick_reply
            if x['message'].get('quick_reply'):
              quick_reply = x['message']['quick_reply']
              payload = quick_reply['payload']
              option = x['message']['text']
              message = PathManager.getPathMessage(payload,option)
-             kakao_messenger.sendTextMessage(recipient_id,message)
+             kakao_messenger.sendTextMessage(message, data)
            # text     
            elif x['message'].get('text'):
              message = x['message']['text']
              result = PathManager.search(message)
-             kakao_messenger.sendReplyMessage(recipient_id, result)            
+             kakao_messenger.sendReplyMessage(result, data)            
          else:
            pass
   return "Success"
