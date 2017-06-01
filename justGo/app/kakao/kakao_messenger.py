@@ -66,16 +66,16 @@ class kakao_messenger:
         return loads(dumps(cls._base_photo))
 
     def get_message(self):
-def sendReplyMessage(self,recipient_id, result):
+    def sendReplyMessage(self,recipient_id, result):
      if result.result_code == PathSearchResultCode.SUCCESS:
        self.sendSuggestionsReply(recipient_id,result)
      else:
        self.sendTextMessage(recipient_id, result.getErrorMessage())
 
-  def sendTextMessage(self, recipient_id, message):
+    def sendTextMessage(self, recipient_id, message):
      bot.send_text_message(recipient_id, message)
 
-  def sendSuggestionsReply(self,recipient_id,result):
+    def sendSuggestionsReply(self,recipient_id,result):
      payload = str(result.path.source_id) + "," + str(result.path.destination_id) 
      bot.send_message(recipient_id,{
         "text":"원하는 정보가 무엇인가요?",
@@ -99,7 +99,7 @@ def sendReplyMessage(self,recipient_id, result):
         ]
      }) 
 
-  def sendTypingOnAction(self, recipient_id):
+   def sendTypingOnAction(self, recipient_id):
      bot.send_action(recipient_id, "typing_on")
         """
         인스턴스 변수인 returned_message 반환합니다.
