@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from .keyboard import Keyboard
-from ujson import dumps, loads
 from ..config.config import Config
 from ..models.PathSearchResult import PathSearchResultCode
-from pymessenger.bot import Bot
+from ujson import dumps, loads
+
 
 class classproperty(object):
     def __init__(self, getter):
@@ -12,7 +12,7 @@ class classproperty(object):
     def __get__(self, instance, owner):
         return self.getter(owner)
 
-class kakao_messenger:
+class Message:
 
     """
     반환될 메시지들의 추상 클래스입니다.
@@ -65,74 +65,21 @@ class kakao_messenger:
     def base_photo(cls):
         return loads(dumps(cls._base_photo))
 
-    def get_message(self):
     def sendReplyMessage(self, data, result):
      if result.result_code == PathSearchResultCode.SUCCESS:
        self.sendSuggestionsReply(data,result)
      else:
        self.sendTextMessage(data, result.getErrorMessage())
 
-    def sendTextMessage(self, data, message):
-     bot.send_text_message(data, message)
-
-    def sendSuggestionsReply(self, data, result):
-     payload = str(result.path.source_id) + "," + str(result.path.destination_id) 
-     bot.send_message(data{
-        "text":"원하는 정보가 무엇인가요?",
-        "quick_replies": [
-        {
-            "content_type":"text",
-            "title":Config.OPTION_SHORTEST_PATH,
-            "payload":payload
-            
-        },
-        {
-            "content_type":"text",
-            "title":Config.OPTION_LEAST_COST,
-            "payload":payload
-        },
-        {
-            "content_type":"text",
-            "title":Config.OPTION_MINIMUM_TRANSFER,
-            "payload":payload
-        }
-        ]
-     }) 
-
-   def sendTypingOnAction(self, data):
-     bot.send_action(data, "typing_on")
-        """
-        인스턴스 변수인 returned_message 반환합니다.
-        예제:
-            다음과 같이 사용하세요:
-            >>> a = BaseMessage()
-            >>> a.get_message()
-            {
-                "message": {
-                    "text": "기본 메시지"
-                },
-                "keyboard": {
-                    "type": "buttons",
-                    "buttons": [
-                        "홈버튼 1",
-                        "홈버튼 2",
-                        "홈버튼 3"
-                    ]
-                }
-            }
-        :returns dict: 반환될 메시지
-        """
-        return self.returned_message
-
 
 class BaseMessage(Message):
-    """
-    커스텀 메시지를 구현할 수 있는 클래스입니다.
-    BaseMessage만 활용해도 되고 FailMessage처럼 상속받아 활용할 수도 있습니다.
-    """
     def __init__(self):
         super().__init__()
         self.returned_message = Message.base_message
+
+    def get_message(self):
+        return self.returned_message
+
 
     def remove_keyboard(self):
         """
@@ -208,48 +155,9 @@ class BaseMessage(Message):
         self.returned_message["message"].update(button_message)
 
     def update_message(self, message):
-        """
-        반환될 메시지를 업데이트합니다.
-        기본 동작은 덮어쓰기입니다.
-        :param str message: 반환될 메시지
-        예제:
-            다음과 같이 사용하세요:
-            >>> a = BaseMessage()
-            >>> a.update_message("파이썬")
-            >>> a.get_message()
-            {
-                "message": {
-                    "text": "파이썬"
-                },
-                "keyboard": 생략
-            }
-        """
         self.returned_message["message"]["text"] = message
 
     def update_keyboard(self, keyboard):
-        """
-        반환될 메시지의 키보드를 업데이트합니다.
-        기본 동작은 덮어쓰기입니다.
-        :param list keyboard: 반환될 메시지의 키보드
-        예제:
-            다음과 같이 사용하세요:
-            >>> a = BaseMessage()
-            >>> a.update_keyboard(["파이썬", "루비", "아희"])
-            >>> a.get_message()
-            {
-                "message": {
-                    "text": "기본 메시지"
-                },
-                "keyboard": {
-                    "type": "buttons",
-                    "buttons": [
-                        "파이썬",
-                        "루비",
-                        "아희"
-                    ]
-                }
-            }
-        """
         _keyboard = Message.base_keyboard
         _keyboard["buttons"] = keyboard
         self.returned_message["keyboard"] = _keyboard
@@ -265,17 +173,26 @@ class FailMessage(BaseMessage):
         self.update_message("오류가 발생하였습니다.")
         self.update_keyboard(Keyboard.home_buttons)
 
+class SuggestionsMessage(BaseMessage):
+   def __init__(self):
+      super().__init__()
+      self.update_message("원하는 정보가 무엇인가요?")
+      self.update_keyboard(["최단거리, 최소비용, 최소환승"])
 
-class HomeMessage(Message):
-    """
-    홈 메시지는 별도의 메시지가 없기에 Message를 상속받아 사용합니다.
-    """
+class GreetingMessage(BaseMessage):
+   def __init__(self):
+       super().__init__()
+       self.update_message("안녕ㅎㅎ")
+
+class PathSearchFailMessage(BaseMessage):
+   def __init__(self, result):
+       super().__init__()
+       self.update_message(result.getErrorMessage())
+
+class HomeMessage(BaseMessage):
     def __init__(self):
         super().__init__()
-        self.returned_message = Message.base_keyboard
-        home_keyboard = Keyboard.home_buttons
-        self.returned_message["buttons"] = home_keyboard
-
+        self.update_message("안녕! 대중교통 경로탐색이나 버스의 첫차, 막차에 대해서 물어보면 친절하게 대답해줄게! :)")
 
 class SuccessMessage(Message):
     """

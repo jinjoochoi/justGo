@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from . import kakao_messenger
-from .message import BaseMessage, HomeMessage, SuccessMessage, FailMessage
+from .message import * 
+from ..models.PathSearchResult import PathSearchResultCode
 
 class Singleton(type):
     instance = None
@@ -13,27 +13,30 @@ class Singleton(type):
 
 class APIManager(metaclass=Singleton):
     def process(self, mode, *args):
+        options = {
+             "home": self.return_home_message,
+             "message": self.handle_message,
+             "add": self.add_friend,
+             "block": self.block_friend,
+             "exit": self.exit_chatroom,
+         }
+        print(options.get(mode)(*args))
+        message = {"message":{"text" : "귀하의 차량이 성공적으로 등록되었습니다. 축하합니다!"}}
+        #message = options.get(mode)(*args)
+        response_code = 200
+        return message, response_code
+        """
         try:
-            options = {
-                "home": self.return_home_keyboard,
-                "message": self.handle_message,
-                "add": self.add_friend,
-                "block": self.block_friend,
-                "exit": self.exit_chatroom,
-            }
-            message = options.get(mode)(*args)
-            response_code = 200
         except:
             message = self.handle_fail()
             response_code = 400
-        finally:
             return message, response_code
+        """
 
-    def return_home_keyboard(self):
-        """
-        [GET] your_server_url/keyboard 일 때 사용되는 함수입니다.
-        """
+
+    def return_home_message(self):
         message = MessageHandler.get_home_message()
+        print(message)
         return message
 
     def handle_message(self, data):
@@ -44,8 +47,17 @@ class APIManager(metaclass=Singleton):
         user_key = data["user_key"]
         request_type = data["type"]
         content = data["content"]
-
-        message = MessageHandler.get_base_message()
+        nlc_result = NLCManager.analysis(content)
+        if nlc_result == Config.NLC_CLASS_GREETING:
+          message = MessageHandler.get_greeting_message()
+        elif nlc_result == Config.NLC_CLASS_SEARCH_PATH:
+          nlp_result = NLPManager.findSrcAndDest(content)
+          result = PathManager.search(nlp_result)
+          if result.result_code == PathSearchResultCode.SUCCESS:
+            return MessageHandler.get_suggestions_message()
+          else:
+            return MessageHandler.get_path_search_fail_message(result)
+            
         return message
 
     def add_friend(self, data):
@@ -85,9 +97,21 @@ class MessageManager(metaclass=Singleton):
         base_message = BaseMessage().get_message()
         return base_message
 
+    def get_greeting_message(self):
+        greeting_message = GreetingMessage().get_message()
+        return greeting_message
+
+    def get_SuggestionsReply(self):
+        suggestions_message = SuggestionsMessage().get_message()
+        return suggestions_message
+
     def get_home_message(self):
         home_message = HomeMessage().get_message()
         return home_message
+
+    def get_path_search_fail_message(self, result):
+        fail_message = PathSearchMessage(result).get_message()
+        return fail_message 
 
     def get_fail_message(self):
         fail_message = FailMessage().get_message()
