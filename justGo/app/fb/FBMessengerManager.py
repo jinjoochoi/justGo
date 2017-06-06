@@ -26,7 +26,7 @@ class FBMessengerManager(metaclass=Singleton):
   def sendSuggestionsReply(self,recipient_id,result):
      payload = str(result.path.source_id) + "," + str(result.path.destination_id) 
      bot.send_message(recipient_id,{
-        "text":"원하는 정보가 무엇인가요?",
+        "text":"어떤 우선순위를 기준으로 검색할까요?",
         "quick_replies": [
         {
             "content_type":"text",

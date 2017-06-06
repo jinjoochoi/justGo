@@ -16,10 +16,20 @@ def webbhook():
      elif output['messaging'].get('text'):
         nlc_result = NLCManager.analysis(output['messaging']['text'])
         if nlc_result == Config.NLC_CLASS_GREETING:
-          message = '안녕ㅎㅎ'
+          message = '안녕하세요.ㅎㅎ'
+          return jsonify(result = message)
+        elif nlc_result == Config.NLC_CLASS_ASK_NAME:
+          message = '제 이름은 저스트고입니다.ㅎㅎ'
+          return jsonify(result = message)
+        elif nlc_result == Config.NLC_CLASS_SLANG:
+          message = '그러지말구 대중교통에 대해서 물어봐줄래요? :)' 
           return jsonify(result = message)
         elif nlc_result == Config.NLC_CLASS_SEARCH_PATH:
           nlp_result = NLPManager.findSrcAndDest(output['messaging']['text'])
-          result = PathManager.search(nlp_result)
-          message = BotManager.sendReplyMessage(result)
-          return jsonify(result = message)
+          if nlp_result.result_code == NLPResultCode.UNSUPPORTED_FORMAT:
+            message = nlp_result.getErrorMessage()
+            return jsonify(result = message)
+          else:
+            result = PathManager.search(nlp_result)
+            message = BotManager.sendReplyMessage(result)
+            return jsonify(result = message)

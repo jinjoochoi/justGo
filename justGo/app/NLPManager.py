@@ -1,4 +1,5 @@
 from konlpy.tag import Mecab
+from .models.NLPResult import NLPResult, NLPResultCode
 
 class Singleton(type):                                                         
   instance = None                                                              
@@ -13,5 +14,8 @@ class NLPManager(metaclass=Singleton):
   
  #TODO : need to advance
   def findSrcAndDest(self, message):
+    print(message)
     nouns = self.mecab.nouns(message)  
-    return nouns[0], nouns[1]
+    if nouns is None or len(nouns) < 2:
+      return NLPResult(NLPResultCode.UNSUPPORTED_FORMAT)
+    return NLPResult(NLPResultCode.SUCCESS,nouns[0], nouns[1])

@@ -18,11 +18,11 @@ class Singleton(type):
 
 class PathManager(metaclass=Singleton):
   
-  def search(self, message):
-    source_id = self.searchLocation(message[0])
-    destination_id = self.searchLocation(message[1])
+  def search(self, src, dest):
+    source_id = self.searchLocation(src)
+    destination_id = self.searchLocation(dest)
     if not source_id is None and  not destination_id is None:
-      return self.searchPath(Path(source_id,message[0],destination_id,message[1]))
+      return self.searchPath(Path(source_id, src, destination_id, dest))
     else:
       return PathSearchResult(PathSearchResultCode.NOTFOUND_LOCATION) 
 
@@ -63,8 +63,7 @@ class PathManager(metaclass=Singleton):
                'SX' : source['lng'], 'SY' : source['lat'],
                'EX' : destination['lng'], 'EY' : destination['lat'],
                'output' : 'json', 'Lang' : 0 , 'resultCount' : 10}
-     res = requests.get(Config.AROINTECH_URL, params = params)
-     #import pdb;pdb.set_trace()
+     res = requests.get(Config.AROINTECH_URL_SEARCH_PATH, params = params)
      if res.status_code == requests.codes.ok:
        # location, totalTransitCount정보도 같이 저장합니다.
        location = {'source_id':path.source_id, 'source_name':path.source_name,'destination_id':path.destination_id,'destination_name':path.destination_name}
@@ -90,7 +89,6 @@ class PathManager(metaclass=Singleton):
      # i == first -> startName = path's source_name , endName = next subpath's startName
      # i == last -> startName = prev subpath's endName , endName = path's destination_name
      # else -> startName = prev subpath's endName, endName = next subpath's startName
-     #import pdb; pdb.set_trace()
      for i in range(0,len(path['subPath'])):
         subpath = path['subPath'][i]
         if subpath['trafficType'] == TrafficType.WALK.value:

@@ -2,7 +2,6 @@
 class PathSearchResultCode(type):
   NONE = 0
   SUCCESS = 201
-  UNSUPPORTED_FORMAT = 301
   NOTFOUND_LOCATION = 401
   NOTFOUND_PATH = 501
 
