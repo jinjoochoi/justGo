@@ -24,13 +24,12 @@ class Message:
     """
     _base_keyboard = {
         "type": "buttons",
-        "buttons": Keyboard.home_buttons,
+        "buttons": []
     }
     _base_message = {
         "message": {
             "text": "원하는 정보가 무엇인가요?",
-        },
-        "keyboard": _base_keyboard,
+        }
     }
     _base_message_button = {
         "message_button": {
@@ -176,8 +175,8 @@ class FailMessage(BaseMessage):
 class SuggestionsMessage(BaseMessage):
    def __init__(self):
       super().__init__()
-      self.update_message("원하는 정보가 무엇인가요?")
-      self.update_keyboard(["최단거리, 최소비용, 최소환승"])
+      self.update_message("어떤 우선순위를 기준으로 검색할까요?")
+      self.update_keyboard(["최단거리","최소비용", "최소환승"])
 
 class GreetingMessage(BaseMessage):
    def __init__(self):
@@ -189,14 +188,26 @@ class PathSearchFailMessage(BaseMessage):
        super().__init__()
        self.update_message(result.getErrorMessage())
 
-class HomeMessage(Message):
-    def __init__(self):
-        super().__init__()
-        self.returned_message = Message.base_keyboard
-        home_keyboard = Keyboard.home_buttons
-        self.returned_message["buttons"] = home_keyboard
+class HomeMessage(BaseMessage):
+   def __init__(self):
+       super().__init__()
+       message = self._base_keyboard
+       message['buttons'] = ["대화 시작하기"]
+       self.returned_message = message 
 
-#update_message("안녕! 대중교통 경로탐색이나 버스의 첫차, 막차에 대해서 물어보면 친절하게 대답해줄게! :)")
+class IntroMessage(BaseMessage):
+   def __init__(self):
+       super().__init__()
+       message = self._base_message
+       message['message']['text'] = "반가워요! 대중교통 경로검색이나\n첫차, 막차와 같은 정보를 물어보시면 친절하게 답해드릴게요 :)"
+       self.returned_message = message 
+
+class PathMessage(BaseMessage):
+   def __init__(self, path_message):
+       super().__init__()
+       message = self._base_message
+       message['message']['text'] = path_message
+       self.returned_message = message 
 
 class SuccessMessage(Message):
     """

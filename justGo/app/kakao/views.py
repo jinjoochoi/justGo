@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, Blueprint, jsonify
 from . import kakao_messenger
-from .manager import APIHandler
+from . import APIHandler
 
 @kakao_messenger.route("/keyboard", methods=["GET"])
 def yellow_keyboard():
-    #message, code = APIHandler.process("home")
-    code = 200
-    message = {"type": "text"} 
+    message, code = APIHandler.process("home")
     return jsonify(message), code
 
 @kakao_messenger.route("/message", methods=["GET", "POST"])
 def yellow_message():
+    print(request.json)
     message, code = APIHandler.process("message", request.json)
     return jsonify(message), code
 
