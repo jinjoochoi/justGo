@@ -20,9 +20,7 @@ class APIManager(metaclass=Singleton):
              "block": self.block_friend,
              "exit": self.exit_chatroom,
          }
-        print(options.get(mode)(*args))
-        message = {"message":{"text" : "귀하의 차량이 성공적으로 등록되었습니다. 축하합니다!"}}
-        #message = options.get(mode)(*args)
+        message = options.get(mode)(*args)
         response_code = 200
         return message, response_code
         """
@@ -36,7 +34,6 @@ class APIManager(metaclass=Singleton):
 
     def return_home_message(self):
         message = MessageHandler.get_home_message()
-        print(message)
         return message
 
     def handle_message(self, data):

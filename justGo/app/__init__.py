@@ -11,6 +11,8 @@ from .NLCManager import NLCManager
 NLCManager = NLCManager()
 from .NLPManager import NLPManager
 NLPManager = NLPManager()
+from .BusManager import BusManager
+BusManager = BusManager()
 
 def create_app():
   app = Flask(__name__)

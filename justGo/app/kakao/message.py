@@ -49,6 +49,9 @@ class Message:
     def __init__(self):
         self.returned_message = None
 
+    def get_message(self):
+        return self.returned_message
+
     @classproperty
     def base_keyboard(cls):
         return loads(dumps(cls._base_keyboard))
@@ -76,9 +79,6 @@ class BaseMessage(Message):
     def __init__(self):
         super().__init__()
         self.returned_message = Message.base_message
-
-    def get_message(self):
-        return self.returned_message
 
 
     def remove_keyboard(self):
@@ -189,10 +189,14 @@ class PathSearchFailMessage(BaseMessage):
        super().__init__()
        self.update_message(result.getErrorMessage())
 
-class HomeMessage(BaseMessage):
+class HomeMessage(Message):
     def __init__(self):
         super().__init__()
-        self.update_message("안녕! 대중교통 경로탐색이나 버스의 첫차, 막차에 대해서 물어보면 친절하게 대답해줄게! :)")
+        self.returned_message = Message.base_keyboard
+        home_keyboard = Keyboard.home_buttons
+        self.returned_message["buttons"] = home_keyboard
+
+#update_message("안녕! 대중교통 경로탐색이나 버스의 첫차, 막차에 대해서 물어보면 친절하게 대답해줄게! :)")
 
 class SuccessMessage(Message):
     """

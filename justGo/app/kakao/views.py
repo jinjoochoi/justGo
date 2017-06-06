@@ -5,8 +5,9 @@ from .manager import APIHandler
 
 @kakao_messenger.route("/keyboard", methods=["GET"])
 def yellow_keyboard():
-    print("call")
-    message, code = APIHandler.process("home")
+    #message, code = APIHandler.process("home")
+    code = 200
+    message = {"type": "text"} 
     return jsonify(message), code
 
 @kakao_messenger.route("/message", methods=["GET", "POST"])
