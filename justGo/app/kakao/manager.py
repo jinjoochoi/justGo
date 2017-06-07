@@ -3,7 +3,9 @@ from .message import *
 from .. import mongo
 from ..models.PathSearchResult import PathSearchResultCode
 from .. import NLCManager, NLPManager, PathManager, BusManager
+from ..models.BusInfoSearchResult import BusInfoSearchResultCode
 from ..config.config import Config
+from bson import ObjectId
 
 class Singleton(type):
     instance = None
@@ -27,33 +29,49 @@ class APIManager(metaclass=Singleton):
         response_code = 200
         return message, response_code
 
-
     def return_home_message(self):
         message = MessageHandler.get_home_message()
         return message
 
-    def return_home_message(self):
-        message = MessageHandler.get_home_message()
-        return message
 
     def handle_message(self, data):
         user_key = data["user_key"]
         request_type = data["type"]
         content = data["content"]
-          
+        message = ""
         # intro message (/keyboard) 
         if content == '대화 시작하기' :
           message = MessageHandler.get_intro_message()
         # suggestions message
         elif content == '최단거리' or content == '최소비용' or content == '최소환승':
           kakao_context = self.get_kakao_context(user_key)
-          payload = kakao_context['source_id'] + "," + kakao_context['destination_id']
+          payload = str(kakao_context['source_id']) + "," + str(kakao_context['destination_id'])
           path_message = PathManager.getPathMessage(payload, content)
           message = MessageHandler.get_path_message(path_message)
         else:
           nlc_result = NLCManager.analysis(content)
+          # NLC_CLASS : greeting
           if nlc_result == Config.NLC_CLASS_GREETING:
             message = MessageHandler.get_greeting_message()
+          # NLC_CLASS : ask name
+          elif nlc_result == Config.NLC_CLASS_ASK_NAME:
+            message = MessageHandler.get_name_message()
+          # NLC_CLASS : slang
+          elif nlc_result == Config.NLC_CLASS_SLANG:
+            message = MessageHandler.get_slang_response_message()
+          # NLC_CLASS : ask bus info
+          elif nlc_result == Config.NLC_CLASS_BUS_INFO:
+            nlp_result = NLPManager.findBusNo(content)
+            if nlp_result.result_code == BusInfoSearchResultCode.UNSUPPORTED_FORMAT:
+              message = MessageHandler.get_bus_info_message(nlp_result.getErrorMessage())
+            else:
+              result = BusManager.getBusInfo(nlp_result.bus_info)
+              if result.result_code == BusInfoSearchResultCode.NOTFOUND:
+                message = MessageHandler.get_bus_info_message(nlp_result.getErrorMessage())
+              else:
+                bus_message = BusManager.makeBusInfoMessage(result.bus_info)
+                message = MessageHandler.get_bus_info_message(bus_message)
+          # NLC_CLASS : ask path
           elif nlc_result == Config.NLC_CLASS_SEARCH_PATH:
             nlp_result = NLPManager.findSrcAndDest(content)
             result = PathManager.search(nlp_result.src, nlp_result.dest)
@@ -66,14 +84,11 @@ class APIManager(metaclass=Singleton):
         return message
  
     def get_kakao_context(self, user_key):
-        print( mongo.db.contexts.find_one({'user_key' : user_key}))
         return mongo.db.contexts.find_one({'user_key' : user_key})
        
 
     def update_kakao_context(self, user_key, source_id, destination_id):
-       print(source_id)
-       print(mongo.db.contexts.update({'user_key' : user_key},{'source_id' : source_id,'destination_id' : destination_id}))
-       mongo.db.contexts.update({'user_key' : user_key},{'source_id' : source_id,'destination_id' : destination_id})
+        mongo.db.contexts.insert({'user_key' : user_key,'source_id' : source_id,'destination_id' : destination_id})
    
     def add_friend(self, data):
         """
@@ -136,6 +151,18 @@ class MessageHandler(metaclass=Singleton):
         fail_message = PathSearchMessage(result).get_message()
         return fail_message 
 
+    def get_name_message(self):
+        name_message = NameMessage().get_message()
+        return name_message 
+
+    def get_slang_response_message(self):
+        slang_response_message = SlangResponseMessage().get_message()
+        return slang_response_message 
+
+    def get_bus_info_message(self, result):
+        bus_info_message = BusInfoMessage(result).get_message()
+        return bus_info_message 
+
     def get_fail_message(self):
         fail_message = FailMessage().get_message()
         return fail_message
@@ -145,3 +172,4 @@ class MessageHandler(metaclass=Singleton):
         return success_message
 
 MessageHandler = MessageHandler()
+

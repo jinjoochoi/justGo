@@ -209,6 +209,21 @@ class PathMessage(BaseMessage):
        message['message']['text'] = path_message
        self.returned_message = message 
 
+class NameMessage(BaseMessage):
+   def __init__(self):
+       super().__init__()
+       self.update_message("제 이름은 저스트고입니다.ㅎㅎ")
+
+class SlangResponseMessage(BaseMessage):
+   def __init__(self):
+       super().__init__()
+       self.update_message("그러지말구 대중교통에 대해서 물어봐줄래요? :)")
+
+class BusInfoMessage(BaseMessage):
+   def __init__(self, message):
+       super().__init__()
+       self.update_message(message)
+
 class SuccessMessage(Message):
     """
     친구 추가, 차단, 채팅방 나가기가 발생했을 때 성공적으로 처리되면 반환되는 메시지입니다.

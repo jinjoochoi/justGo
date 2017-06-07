@@ -67,13 +67,16 @@ class PathManager(metaclass=Singleton):
      if res.status_code == requests.codes.ok:
        # location, totalTransitCount정보도 같이 저장합니다.
        location = {'source_id':path.source_id, 'source_name':path.source_name,'destination_id':path.destination_id,'destination_name':path.destination_name}
-       paths = res.json()['result']['path']
-       for p in paths:
-          totalTransitCount = {'totalTransitCount': p['info']['busTransitCount'] + p['info']['subwayTransitCount']}
-          mongo.db.paths.update({'mapObj': p['info']['mapObj']},
+       try:
+         paths = res.json()['result']['path']
+         for p in paths:
+            totalTransitCount = {'totalTransitCount': p['info']['busTransitCount'] + p['info']['subwayTransitCount']}
+            mongo.db.paths.update({'mapObj': p['info']['mapObj']},
                                 {'$set':{'pathType':p['pathType'],'subPath':p['subPath'],'info':p['info'],'location':location,'totalTransitCount':totalTransitCount}},upsert=True)  
-       return PathSearchResult(PathSearchResultCode.SUCCESS,path)
-     return PathSearchResult(PathSearchResultCode.NOTFOUND_PATH)
+         return PathSearchResult(PathSearchResultCode.SUCCESS,path)
+       except:
+         return PathSearchResult(PathSearchResultCode.NOTFOUND_PATH)
+          
 
 
   """
