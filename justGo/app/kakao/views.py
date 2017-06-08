@@ -10,7 +10,6 @@ def yellow_keyboard():
 
 @kakao_messenger.route("/message", methods=["GET", "POST"])
 def yellow_message():
-    print(request.json)
     message, code = APIHandler.process("message", request.json)
     return jsonify(message), code
 

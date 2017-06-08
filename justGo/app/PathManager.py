@@ -115,6 +115,7 @@ class PathManager(metaclass=Singleton):
      return message
 
   def makeIntroMessage(self, path, option):
+     print(path)
      source_name = path['location']['source_name'] 
      destination_name = path['location']['destination_name'] 
      return source_name +" -> "+ destination_name + " "+option + '\n\n'

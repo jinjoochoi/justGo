@@ -176,7 +176,7 @@ class SuggestionsMessage(BaseMessage):
    def __init__(self):
       super().__init__()
       self.update_message("어떤 우선순위를 기준으로 검색할까요?")
-      self.update_keyboard(["최단거리","최소비용", "최소환승"])
+      self.update_keyboard(["최소비용", "최소환승","최단거리"])
 
 class GreetingMessage(BaseMessage):
    def __init__(self):

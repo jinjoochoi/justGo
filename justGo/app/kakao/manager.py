@@ -80,7 +80,6 @@ class APIManager(metaclass=Singleton):
               message = MessageHandler.get_suggestions_message()
             else:
               message = MessageHandler.get_path_search_fail_message(result)
-            
         return message
  
     def get_kakao_context(self, user_key):
@@ -148,7 +147,7 @@ class MessageHandler(metaclass=Singleton):
         return path_message
 
     def get_path_search_fail_message(self, result):
-        fail_message = PathSearchMessage(result).get_message()
+        fail_message = PathMessage(result.getErrorMessage()).get_message()
         return fail_message 
 
     def get_name_message(self):
