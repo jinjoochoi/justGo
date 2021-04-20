@@ -23,7 +23,7 @@ mecab-python===0.996-ko-0.9.0
 mecab-python3==0.7
 mongoengine==0.13.0
 pip-save==0.2.0
-py==1.4.33
+py==1.10.0
 pycparser==2.17
 pymessenger==0.0.7.0
 pymongo==3.4.0
