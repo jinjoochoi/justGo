@@ -38,7 +38,7 @@ requests-toolbelt==0.7.1
 six==1.10.0
 SQLAlchemy==1.1.9
 tornado==4.5.1
-urllib3==1.21.1
+urllib3==1.26.5
 uWSGI==2.0.15
 watson-developer-cloud==0.26.0
 Werkzeug==0.12.1
